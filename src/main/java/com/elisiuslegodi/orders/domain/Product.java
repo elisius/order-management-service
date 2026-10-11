@@ -7,7 +7,9 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 
 @Entity
 @Table(name = "products")
@@ -34,8 +36,8 @@ public class Product {
     public Product(String name, String description, BigDecimal price) {
         this.name = name;
         this.description = description;
-        this.price = price;
-        this.createdAt = Instant.now();
+        this.price = price.setScale(2, RoundingMode.HALF_UP);
+        this.createdAt = Instant.now().truncatedTo(ChronoUnit.MICROS);
     }
 
     public Long getId() {
