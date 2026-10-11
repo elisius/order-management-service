@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 
 import com.elisiuslegodi.orders.domain.Product;
 import com.elisiuslegodi.orders.dto.CreateProductRequest;
+import com.elisiuslegodi.orders.dto.PageResponse;
 import com.elisiuslegodi.orders.dto.ProductResponse;
 import com.elisiuslegodi.orders.exception.ResourceNotFoundException;
 import com.elisiuslegodi.orders.repository.ProductRepository;
@@ -20,6 +21,9 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 @ExtendWith(MockitoExtension.class)
 class ProductServiceTest {
@@ -62,13 +66,16 @@ class ProductServiceTest {
     }
 
     @Test
-    void listProductsMapsEveryProduct() {
-        when(productRepository.findAll()).thenReturn(List.of(
-                new Product("Keyboard", null, new BigDecimal("499.99")),
-                new Product("Mouse", null, new BigDecimal("150.00"))));
+    void listProductsReturnsOnePageWithTotals() {
+        when(productRepository.findAll(any(Pageable.class))).thenReturn(new PageImpl<>(
+                List.of(new Product("Keyboard", null, new BigDecimal("499.99")),
+                        new Product("Mouse", null, new BigDecimal("150.00"))),
+                PageRequest.of(0, 2), 5));
 
-        assertThat(productService.listProducts())
-                .extracting(ProductResponse::name)
-                .containsExactly("Keyboard", "Mouse");
+        PageResponse<ProductResponse> page = productService.listProducts(0, 2);
+
+        assertThat(page.content()).extracting(ProductResponse::name).containsExactly("Keyboard", "Mouse");
+        assertThat(page.totalElements()).isEqualTo(5);
+        assertThat(page.totalPages()).isEqualTo(3);
     }
 }

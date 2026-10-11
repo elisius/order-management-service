@@ -103,14 +103,19 @@ class OrderApiIntegrationTest extends AbstractApiIntegrationTest {
     }
 
     @Test
-    void listsAllOrders() throws Exception {
+    void listsOrdersInPages() throws Exception {
         long keyboard = createProduct("Keyboard", "100.00");
         placeOrder("{\"items\": [{\"productId\": %d}]}".formatted(keyboard)).andExpect(status().isCreated());
         placeOrder("{\"items\": [{\"productId\": %d}]}".formatted(keyboard)).andExpect(status().isCreated());
 
         mockMvc.perform(get("/api/v1/orders").with(validCredentials()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(2)));
+                .andExpect(jsonPath("$.content", hasSize(2)))
+                .andExpect(jsonPath("$.totalElements").value(2));
+
+        mockMvc.perform(get("/api/v1/orders?page=0&size=1").with(validCredentials()))
+                .andExpect(jsonPath("$.content", hasSize(1)))
+                .andExpect(jsonPath("$.totalPages").value(2));
     }
 
     private ResultActions placeOrder(String json) throws Exception {

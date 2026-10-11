@@ -2,10 +2,10 @@ package com.elisiuslegodi.orders.service;
 
 import com.elisiuslegodi.orders.domain.Product;
 import com.elisiuslegodi.orders.dto.CreateProductRequest;
+import com.elisiuslegodi.orders.dto.PageResponse;
 import com.elisiuslegodi.orders.dto.ProductResponse;
 import com.elisiuslegodi.orders.exception.ResourceNotFoundException;
 import com.elisiuslegodi.orders.repository.ProductRepository;
-import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,7 +31,7 @@ public class ProductService {
                 .orElseThrow(() -> new ResourceNotFoundException("Product", id));
     }
 
-    public List<ProductResponse> listProducts() {
-        return productRepository.findAll().stream().map(ProductResponse::from).toList();
+    public PageResponse<ProductResponse> listProducts(int page, int size) {
+        return PageResponse.from(productRepository.findAll(Pagination.byId(page, size)).map(ProductResponse::from));
     }
 }

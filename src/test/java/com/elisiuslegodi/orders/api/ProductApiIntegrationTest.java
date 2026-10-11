@@ -80,7 +80,30 @@ class ProductApiIntegrationTest extends AbstractApiIntegrationTest {
 
         mockMvc.perform(get("/api/v1/products").with(validCredentials()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(2)));
+                .andExpect(jsonPath("$.content", hasSize(2)))
+                .andExpect(jsonPath("$.totalElements").value(2));
+    }
+
+    @Test
+    void paginatesProducts() throws Exception {
+        createProduct("Keyboard", "499.99");
+        createProduct("Mouse", "150.00");
+        createProduct("Monitor", "2999.00");
+
+        mockMvc.perform(get("/api/v1/products?page=1&size=2").with(validCredentials()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(1)))
+                .andExpect(jsonPath("$.content[0].name").value("Monitor"))
+                .andExpect(jsonPath("$.page").value(1))
+                .andExpect(jsonPath("$.size").value(2))
+                .andExpect(jsonPath("$.totalElements").value(3))
+                .andExpect(jsonPath("$.totalPages").value(2));
+    }
+
+    @Test
+    void returns400ForOutOfRangePageSize() throws Exception {
+        mockMvc.perform(get("/api/v1/products?size=1000").with(validCredentials()))
+                .andExpect(status().isBadRequest());
     }
 
     @Test

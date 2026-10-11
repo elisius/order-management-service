@@ -5,6 +5,7 @@ import com.elisiuslegodi.orders.domain.Product;
 import com.elisiuslegodi.orders.dto.CreateOrderRequest;
 import com.elisiuslegodi.orders.dto.OrderItemRequest;
 import com.elisiuslegodi.orders.dto.OrderResponse;
+import com.elisiuslegodi.orders.dto.PageResponse;
 import com.elisiuslegodi.orders.exception.ProductsNotFoundException;
 import com.elisiuslegodi.orders.exception.ResourceNotFoundException;
 import com.elisiuslegodi.orders.repository.OrderRepository;
@@ -62,8 +63,8 @@ public class OrderService {
                 .orElseThrow(() -> new ResourceNotFoundException("Order", id));
     }
 
-    public List<OrderResponse> listOrders() {
-        return orderRepository.findAll().stream().map(OrderResponse::from).toList();
+    public PageResponse<OrderResponse> listOrders(int page, int size) {
+        return PageResponse.from(orderRepository.findAll(Pagination.byId(page, size)).map(OrderResponse::from));
     }
 
     private Map<Long, Integer> mergeQuantitiesByProduct(List<OrderItemRequest> items) {
