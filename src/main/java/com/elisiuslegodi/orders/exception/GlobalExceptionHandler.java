@@ -27,6 +27,15 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return problem;
     }
 
+    @ExceptionHandler(ProductsNotFoundException.class)
+    ProblemDetail handleProductsNotFound(ProductsNotFoundException ex) {
+        log.warn("Order rejected, unknown product ids: {}", ex.getMissingProductIds());
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_CONTENT, ex.getMessage());
+        problem.setTitle("Order rejected");
+        problem.setProperty("missingProductIds", ex.getMissingProductIds());
+        return problem;
+    }
+
     @ExceptionHandler(Exception.class)
     ProblemDetail handleUnexpected(Exception ex) {
         log.error("Unexpected error", ex);
