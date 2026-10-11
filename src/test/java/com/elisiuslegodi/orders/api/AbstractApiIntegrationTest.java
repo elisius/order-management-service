@@ -11,6 +11,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.cache.CacheManager;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
@@ -27,10 +28,14 @@ abstract class AbstractApiIntegrationTest {
     @Autowired
     protected OrderRepository orderRepository;
 
+    @Autowired
+    protected CacheManager cacheManager;
+
     @BeforeEach
-    void cleanDatabase() {
+    void resetState() {
         orderRepository.deleteAll();
         productRepository.deleteAll();
+        cacheManager.getCacheNames().forEach(name -> cacheManager.getCache(name).clear());
     }
 
     protected static RequestPostProcessor validCredentials() {
